@@ -1,9 +1,15 @@
 # Weather APP
 waa test project midkaas oo ku soo bandhigaayo maagalada aad joogtid weather keeda
+- Raadi magaalada 
+- Ka wac WeatherService-ka 
+- Bandhiga temperature-ka, condition-ka, iyo magaca magaalada
+-  Bandhiga loading spinner-ka 
+-  Bandhiga  error message-ka 
 ## waxa uu ka kooban yahay app-ka
 - flutter 
 - material UI
 - [Openweathermap API](https://openweathermap.org/)
+  
 
 ## sida loo isticmaalo
 - API key ka soo qaado [openWeatherMap ](https://openweathermap.org/)
