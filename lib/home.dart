@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'weather_service.dart';
 import 'package:weather_icons/weather_icons.dart';
+import 'package:connectivity_plus/connectivity_plus.dart'; 
+import 'dart:io';
 
 
 class WeatherHomePage extends StatefulWidget {
@@ -59,21 +61,44 @@ void dispose() {
       return WeatherIcons.day_sunny_overcast;
   }
 }
-  Future<void> fetchWeather() async {
+ Future<void> fetchWeather() async {
     setState(() {
       isLoading = true;
       errorMessage = null;
     });
 
     try {
+      // **A. Check for No Internet Connectivity FIRST**
+      final connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none) {
+        throw const SocketException("No Internet Connection");
+      }
+
+      // **B. Proceed with API call if network is available**
       final data = await _weatherService.fetchWeather(_controller.text.trim());
       setState(() {
         weatherData = data;
       });
     } catch (e) {
+      // **C. Differentiate Error Messages**
+
+      String errorText;
+      if (e is SocketException) {
+        // This catches the 'No Internet' error thrown above or a direct network failure from http
+        errorText = "❌ No internet connection. Please try again.";
+      } else if (e.toString().contains('400')) {
+        // Catches the API 400 Bad Request error (often for city not found)
+        errorText = "⚠️ City not found. Please check your spelling.";
+      } else {
+        // General error handling for other API or unexpected issues
+        errorText = "An unexpected error occurred: ${e.toString()}";
+      }
+
       setState(() {
-        errorMessage = "City not found or API error.";
+        errorMessage = errorText;
+        weatherData = null; // Clear old data on error
       });
+        
     } finally {
       setState(() {
         isLoading = false;
@@ -116,23 +141,23 @@ void dispose() {
                   errorMessage!,
                   style: const TextStyle(color: Colors.red, fontSize: 16),
                 ),
-              if (weatherData != null) ...[
-                Text(
-                  weatherData!['name'],
+            if (weatherData != null) ...[
+                  Text(
+                  weatherData!['location']['name'],
                   style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 BoxedIcon(
-                  _getWeatherIcon(weatherData!['weather'][0]['main']),
+                  _getWeatherIcon(weatherData!['current']['condition']['text']),
                   size: 50,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "${weatherData!['main']['temp']}°C",
+                  "${weatherData!['current']['temp_c']}°C",
                   style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  weatherData!['weather'][0]['description'],
+                  weatherData!['current']['condition']['text'],
                   style: const TextStyle(fontSize: 20),
                 ),
               ],

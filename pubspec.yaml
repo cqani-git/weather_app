@@ -13,6 +13,7 @@ dependencies:
   http: ^1.6.0
   cupertino_icons: ^1.0.8
   weather_icons: ^3.0.0
+  connectivity_plus: ^5.0.2
   
 
 dev_dependencies:
